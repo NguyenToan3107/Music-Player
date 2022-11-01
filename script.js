@@ -25,10 +25,14 @@ const playBtn = $('.btn-toggle-play')
 const progress = $('#progress')
 const nextBtn = $('.btn-next')
 const prevBtn = $('.btn-prev')
+const randomBtn = $('.btn-random')
+const repeatBtn = $('.btn-repeat')
 
 const app = {
     currentIndex: 0,
     isPlaying: false,
+    isRandom: false,
+    isRepeat: false,
     songs: [
         {
             name: "Chúng ta của hiện tại",
@@ -69,8 +73,8 @@ const app = {
 
     ],
     render: function () {
-        const htmls = this.songs.map(function (song, index) {
-            return `<div class="song">
+        const htmls = this.songs.map((song, index) => {
+            return `<div class="song ${index === this.currentIndex ? 'active' : ''}">
                         <div class="thumb"
                             style="background-image: url('${song.image}');">
                         </div>
@@ -96,9 +100,6 @@ const app = {
             duration: 10000, // 10 seconds
             iterations: Infinity
         })
-
-
-
 
         // Xử lí phóng to  / thu nhỏ CD
         document.onscroll = function () {
@@ -148,14 +149,46 @@ const app = {
 
         // Khi next song
         nextBtn.onclick = function () {
-            _this.nextSong()
+            if (_this.isRandom) {
+                _this.playrandomSong()
+            } else {
+                _this.nextSong()
+            }
             audio.play()
+            _this.render()
         }
 
         // khi prev song
         prevBtn.onclick = function () {
-            _this.prevSong()
+            if (_this.isRandom) {
+                _this.playrandomSong()
+            } else {
+                _this.prevSong()
+            }
             audio.play()
+            _this.render()
+
+        }
+        // Xử lí rondom bật / tắt
+        randomBtn.onclick = function () {
+            _this.isRandom = !_this.isRandom
+            randomBtn.classList.toggle('active', _this.isRandom)
+        }
+
+        // Xử lí next xong khi audio ended
+        audio.onended = function () {
+
+            if (_this.isRepeat) {
+                audio.play()
+            } else {
+                nextBtn.click()
+            }
+        }
+
+        // Xử lí phát lại 1 bài hát
+        repeatBtn.onclick = function () {
+            _this.isRepeat = !_this.isRepeat
+            repeatBtn.classList.toggle('active', _this.isRepeat)
         }
 
     },
@@ -182,12 +215,22 @@ const app = {
         this.loadCurrentSong()
     },
     prevSong: function () {
-        this.currentIndex--
+        this.currentIndex--;
         if (this.currentIndex < 0) {
             this.currentIndex = this.songs.length - 1;
         }
         this.loadCurrentSong()
     },
+
+    playrandomSong: function () {
+        let newIndex
+        do {
+            newIndex = Math.floor(Math.random() * this.songs.length)
+        } while (newIndex === this.currentIndex)
+        this.currentIndex = newIndex
+        this.loadCurrentSong()
+    },
+
 
     start: function () {
         // định nghĩa các thuộc tính cho object
