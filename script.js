@@ -74,7 +74,7 @@ const app = {
     ],
     render: function () {
         const htmls = this.songs.map((song, index) => {
-            return `<div class="song ${index === this.currentIndex ? 'active' : ''}">
+            return `<div class="song ${index === this.currentIndex ? 'active' : ''}" data-index= "${index}">
                         <div class="thumb"
                             style="background-image: url('${song.image}');">
                         </div>
@@ -100,6 +100,7 @@ const app = {
             duration: 10000, // 10 seconds
             iterations: Infinity
         })
+
 
         // Xử lí phóng to  / thu nhỏ CD
         document.onscroll = function () {
@@ -156,6 +157,7 @@ const app = {
             }
             audio.play()
             _this.render()
+            _this.scrollToActiveSong()
         }
 
         // khi prev song
@@ -167,7 +169,7 @@ const app = {
             }
             audio.play()
             _this.render()
-
+            _this.scrollToActiveSong()
         }
         // Xử lí rondom bật / tắt
         randomBtn.onclick = function () {
@@ -177,7 +179,6 @@ const app = {
 
         // Xử lí next xong khi audio ended
         audio.onended = function () {
-
             if (_this.isRepeat) {
                 audio.play()
             } else {
@@ -191,6 +192,34 @@ const app = {
             repeatBtn.classList.toggle('active', _this.isRepeat)
         }
 
+        // lắng nghe hành vi click vào playlist 
+        playlist.onclick = function (e) {
+            const songNode = e.target.closest('.song:not(.active)')
+            if (songNode || e.target.closest('.option')) {
+                // Xử lí khi click vào song
+                if (songNode) {
+                    _this.currentIndex = Number(songNode.dataset.index)
+                    _this.loadCurrentSong()
+                    _this.render()
+                    audio.play()
+                }
+
+                // Xử lí khi click vào song option
+                if (e.target.closest('.option')) {
+
+                }
+            }
+        }
+
+    },
+
+    scrollToActiveSong: function () {
+        setTimeout(() => {
+            $('.song.active').scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            })
+        }, 300)
     },
 
     defineProperties: function () {
